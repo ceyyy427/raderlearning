@@ -113,6 +113,14 @@ flowchart LR
 | **后台** | 信源管理与试抓、内容诊断、精选评测、每一步单独换模型、付费服务的预算熔断、运行记录与告警 |
 | **AI 专属模块** | 模型榜（汇总多家公开评测，方法公开）和 Codex 重置监控。别的行业一个开关关掉 |
 
+## 你能从中学到什么
+
+RaderLearning 不预设一套所有人都一样的课程。你选择关注什么项目、使用什么工具、打开哪些原始证据、完成哪些练习，决定了你会学到什么。
+
+学习的深度和能力的成长，也取决于你怎样使用它：是只看一眼变化，还是继续读 Change Brief、完成 Learning Task、记录自己的理解，并在 Review 中回来验证。RaderLearning 提供变化、背景、练习和复习的结构，学习的方向、节奏和深度由你自己决定。
+
+> What you learn depends on what you use. How deeply you learn depends on you.
+
 ## 看一眼
 
 <picture>
@@ -189,16 +197,6 @@ docker compose up -d --build
 部署和使用问题到 [问答区](https://github.com/ceyyy427/raderlearning/discussions/categories/q-a)，新想法到 [想法交流区](https://github.com/ceyyy427/raderlearning/discussions/categories/ideas)，欢迎在 [作品展示区](https://github.com/ceyyy427/raderlearning/discussions/categories/show-and-tell) 分享你做出的行业热点站。
 
 发现 Bug 或有明确的功能建议，可以 [提交 Issue](https://github.com/ceyyy427/raderlearning/issues/new/choose)。准备改代码前，先看 [贡献说明](CONTRIBUTING.md)；安全漏洞请走 [私密报告入口](SECURITY.md)。
-
-## 最后
-
-RaderLearning 曾经只是我无数个深夜里，一个很小、很小的念头。
-
-我不知道它会被改成什么样子，会走到多远的地方。但这可能就是开源最浪漫的地方。
-
-剩下的路，就交给你们了。
-
-<p align="right">—— 数字生命卡兹克</p>
 
 ## 许可
 
