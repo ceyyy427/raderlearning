@@ -1,0 +1,6 @@
+# HTTPS in front of the site: Caddy gets and renews the certificate for SITE_DOMAIN and compresses
+# responses. Point the domain's DNS at this server first.
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}

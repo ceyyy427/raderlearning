@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+.cache/
+.DS_Store
+.data/
+.superpowers/
+
+# Web production build
+apps/web/build/
+apps/web/.react-router/
+
+# Font package unpacked to regenerate the report nameplates (docs/customize.md)
+package/
+fontsource-noto-sans-sc-*.tgz

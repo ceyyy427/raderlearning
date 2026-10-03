@@ -1,0 +1,116 @@
+# Checks on GitHub-hosted runners: install, typecheck, web build, the web and backend tests on a fresh
+# PostgreSQL, the built site's smoke check on the empty database, and the Docker image brought up with docker compose.
+# Only GitHub-owned actions, pinned to a full commit SHA.
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: aihot_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      DATABASE_URL: postgres://postgres:ci@127.0.0.1:5432/aihot_ci
+      SITE_URL: http://127.0.0.1:3000
+      API_BASE_URL: http://127.0.0.1:3001
+      SESSION_SECRET: ci-session-secret-0123456789abcdef
+      IMG_PROXY_SIGN_SECRET: ci-img-secret-0123456789abcdef
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: PostgreSQL backup tools
+        # 恢复测试需要与 PostgreSQL 17 服务匹配的客户端，不能依赖 runner 的默认版本。
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          /usr/lib/postgresql/17/bin/pg_restore --version
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build web
+        run: npm run build -w @aihot/web
+      - name: Web tests
+        run: node --test apps/web/tests/*.test.ts
+
+      # Each test file runs on its own copy of aihot_ci (tests/databases.ts), which the run migrates and
+      # leaves empty; the smoke check then reads that empty database.
+      - name: Backend tests
+        run: npm test
+      - name: Open Source Radar acceptance
+        run: node --test tests/e2e/open-source-radar.spec.ts
+      - name: Smoke check of the built site
+        # The site itself runs with collection and model calls off (the tests above use local stubs).
+        env:
+          COLLECT_ENABLED: "false"
+          MODEL_CALLS_ENABLED: "false"
+        run: |
+          node apps/api/src/main.ts > "$RUNNER_TEMP/api.log" 2>&1 &
+          (cd apps/web && NODE_ENV=production exec node server.ts) > "$RUNNER_TEMP/web.log" 2>&1 &
+          for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:3000/api/health 2>/dev/null && break; sleep 1; done
+          node scripts/smoke.ts --base http://127.0.0.1:3000
+          node scripts/mcp-check.ts http://127.0.0.1:3000/api/mcp
+      - name: Server logs
+        if: failure()
+        run: tail -n 60 "$RUNNER_TEMP/api.log" "$RUNNER_TEMP/web.log" 2>/dev/null || true
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Configure a throwaway site
+        run: |
+          node scripts/init-env.ts --llm-key ci-not-a-real-key
+          # No outside calls in CI: nothing is collected and no model is asked.
+          sed -i 's/^COLLECT_ENABLED=.*/COLLECT_ENABLED=false/; s/^MODEL_CALLS_ENABLED=.*/MODEL_CALLS_ENABLED=false/' .env
+          # The smoke check reaches the site by its compose service name.
+          echo "MCP_ALLOWED_HOSTS=web" >> .env
+      - name: Build and start with docker compose
+        run: docker compose up -d --build
+      - name: Smoke check
+        run: |
+          for i in $(seq 1 90); do curl -fsS -o /dev/null http://127.0.0.1:3000/api/health 2>/dev/null && break; sleep 2; done
+          docker compose ps
+          docker compose run --rm --no-deps --entrypoint node setup scripts/smoke.ts --base http://web:3000
+          docker compose exec -T db psql -U aihot -d aihot -Atc "select count(*) from sources" | grep -qx "$(node -p "require('./industry/sources.json').sources.length")"
+      - name: Logs
+        if: failure()
+        run: docker compose logs --tail 80
+      - name: Stop
+        if: always()
+        run: docker compose down -v

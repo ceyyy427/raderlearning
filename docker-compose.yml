@@ -1,0 +1,96 @@
+# docker compose up -d --build     → http://localhost:3000   (the admin is at /admin)
+# docker compose --profile https up -d --build   → HTTPS for SITE_DOMAIN through Caddy
+name: aihot
+
+x-app: &app
+  build: .
+  image: aihot-app
+  env_file: .env
+  restart: unless-stopped
+  environment: &app-env
+    NODE_ENV: production
+    DATABASE_URL: postgres://aihot:${POSTGRES_PASSWORD:-aihot}@db:5432/aihot
+    AIHOT_DATA_DIR: /data
+    API_BASE_URL: http://api:3001
+    LOCAL_ROUTER_URL: http://web:3000
+  volumes:
+    - data:/data
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aihot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aihot}
+      POSTGRES_DB: aihot
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aihot -d aihot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # Applies the database migrations and seeds the demo sources and the leaderboard directory, then exits.
+  setup:
+    <<: *app
+    restart: "no"
+    command: ["sh", "-c", "node scripts/migrate.ts && node scripts/seed.ts"]
+
+  api:
+    <<: *app
+    command: ["node", "apps/api/src/main.ts"]
+    environment:
+      <<: *app-env
+      API_HOST: 0.0.0.0
+      API_PORT: "3001"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *app
+    command: ["node", "apps/worker/src/main.ts"]
+    # On stop the worker lets a paid call in flight finish (STOP_TIMEOUT_MS, 195 s); Docker's default
+    # 10 s would kill it mid-call and leave "outcome unknown" receipts that are paid for again.
+    stop_grace_period: 210s
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+  web:
+    <<: *app
+    command: ["node", "apps/web/server.ts"]
+    environment:
+      <<: *app-env
+      WEB_HOST: 0.0.0.0
+      WEB_PORT: "3000"
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_started
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    depends_on:
+      - web
+
+volumes:
+  db: {}
+  data: {}
+  caddy: {}

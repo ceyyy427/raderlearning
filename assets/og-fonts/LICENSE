@@ -1,0 +1,11 @@
+这两个 ttf 是 Noto Sans CJK SC（Noto Sans SC）的子集化产物，仅用于 AI HOT 的 OG
+分享图渲染（GB2312 + 拉丁 + 标点子集，见 scripts/og/build-og-font.mjs）。
+
+原字体：Noto Sans CJK / Noto Sans SC
+版权：Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name
+      'Source'. （Google Noto 项目分发）
+许可：SIL Open Font License, Version 1.1 (OFL-1.1)
+      https://scripts.sil.org/OFL  ·  https://github.com/notofonts/noto-cjk
+
+OFL 允许嵌入、子集化与再分发，要求保留版权与许可声明（本文件即为此）。子集化字体
+不得单独售卖，可随软件/产品自由分发。完整 OFL 全文见上方链接。

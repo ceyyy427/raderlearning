@@ -1,0 +1,11 @@
+node_modules
+apps/web/node_modules
+apps/web/build
+apps/web/.react-router
+.data
+.env
+.env.*
+!.env.example
+.git
+.github
+*.log

@@ -1,0 +1,28 @@
+{
+  "name": "@aihot/backend",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@aihot/contracts": "*",
+    "@aihot/developer-domain": "*",
+    "@aihot/industry": "*",
+    "@mozilla/readability": "0.6.0",
+    "@paralleldrive/cuid2": "3.3.0",
+    "cheerio": "1.2.0",
+    "fast-xml-parser": "5.11.1",
+    "highs": "1.15.3",
+    "hyparquet": "1.31.1",
+    "linkedom": "0.18.13",
+    "marked": "18.0.14",
+    "pg-boss": "12.34.0",
+    "postgres": "3.4.9",
+    "sanitize-html": "2.17.7",
+    "sharp": "0.35.4",
+    "turndown": "7.2.4",
+    "undici": "8.11.2",
+    "zod": "4.6.5"
+  }
+}

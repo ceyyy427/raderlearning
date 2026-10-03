@@ -1,0 +1,606 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens: warm off-white paper, ink text, one teal accent (cyan in
+   dark), hairline borders, no gradients.
+   Components use the semantic names below; values change per theme only.
+   --------------------------------------------------------------------------- */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Touch screens (no hover): pressed states for rows and cards. */
+@custom-variant touch (@media (hover: none));
+
+@theme {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* Semantic colours. */
+  --color-bg: var(--bg);
+  --color-bg-sunk: var(--bg-sunk);
+  --color-bg-muted: var(--bg-muted);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-raised: var(--raised);
+  --color-sidebar: var(--sidebar);
+  --color-daybar: var(--daybar);
+  --color-field: var(--field);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-soft: var(--line-soft);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-softer: var(--accent-softer);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-note: var(--note);
+  --color-hot: var(--hot);
+  --color-hot-soft: var(--hot-soft);
+  --color-amber: var(--amber);
+  --color-amber-ink: var(--amber-ink);
+  --color-amber-soft: var(--amber-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-ink: var(--ok-ink);
+  --color-cal-plain: var(--cal-plain);
+  --color-cal-confirmed: var(--cal-confirmed);
+  --color-cal-announced: var(--cal-announced);
+  --color-cal-key-confirmed: var(--cal-key-confirmed);
+  --color-cal-key-announced: var(--cal-key-announced);
+  --color-panel-quiet: var(--panel-quiet);
+  --color-rank-1: var(--rank-1);
+  --color-rank-2: var(--rank-2);
+  --color-rank-3: var(--rank-3);
+  --color-rank-rest: var(--rank-rest);
+
+  /* Radius scale: mark 5 (inline code, kbd, tiny tags and swatches), control 8 (inputs, small
+     blocks), tile 10 (list rows, hover areas), card 12, panel 14 (wells, pictures), sheet 16 (dialogs,
+     sheets, hero shells); pills are rounded-full. Arbitrary radii are not used. */
+  --radius-mark: 5px;
+  --radius-control: 8px;
+  --radius-tile: 10px;
+  --radius-card: 12px;
+  --radius-panel: 14px;
+  --radius-sheet: 16px;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Breakpoints: phones ≤ 640, the mobile shell up to 960, desktop above. */
+  --breakpoint-sm: 641px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 961px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+:root {
+  /* Page widths follow the screen's shape. Lists fill the screen up to 21:9
+     and centre beyond it (32:9); reading pages fill a 16:9 screen and centre on wider ones. A browser
+     window is shorter than its screen (tabs, address bar), so a 16:9 screen gives a window of about 2:1
+     and a 21:9 screen one of about 2.7:1. 236px is the sidebar and the main area's padding. */
+  --page-max-wide: max(1200px, calc(270dvh - 236px));
+  --page-max-reading: max(1100px, calc(200dvh - 236px));
+  /* The phone shell (below lg): the top bar's height, which sticky headers inside pages sit below, and
+     side gutters that keep clear of the notch in landscape. The desktop shell has no top bar. */
+  --bar-h: 48px;
+  --gutter-l: max(16px, env(safe-area-inset-left));
+  --gutter-r: max(16px, env(safe-area-inset-right));
+  color-scheme: light;
+  --bg: #faf9f6;
+  --bg-sunk: #f3f3ef;
+  --bg-muted: #e9ede9;
+  --surface: #ffffff;
+  --surface-2: #fdfdfb;
+  --raised: #ffffff;
+  --sidebar: #fdfdfb;
+  --daybar: #f0f2ee;
+  --field: #eef1ed;
+  --ink: #202a30;
+  --ink-2: #303c42;
+  --ink-3: #59656b;
+  --ink-4: #657176;
+  --line: #dfe4e1;
+  --line-strong: #d1d9d5;
+  --line-soft: #e9ede9;
+  --accent: #176b75;
+  --accent-ink: #145f68;
+  --accent-soft: rgba(23, 107, 117, 0.08);
+  --accent-softer: rgba(23, 107, 117, 0.05);
+  --accent-contrast: #ffffff;
+  --note: #526f72;
+  --hot: #b3402a;
+  --hot-soft: rgba(179, 64, 42, 0.08);
+  --amber: #b8873a;
+  --amber-ink: #7c5a24;
+  --amber-soft: rgba(184, 135, 58, 0.1);
+  --ok: #2f7d5c;
+  --ok-soft: rgba(47, 125, 92, 0.1);
+  --ok-ink: #2a6e51;
+  /* Reset monitor: days mixed from the landed (green) and announced (amber) tones over the surface. */
+  --cal-plain: rgba(28, 39, 51, 0.024);
+  --cal-confirmed: color-mix(in srgb, var(--ok-ink) 12%, var(--surface));
+  --cal-announced: color-mix(in srgb, var(--amber-ink) 14%, var(--surface));
+  --cal-key-confirmed: color-mix(in srgb, var(--ok-ink) 30%, var(--surface));
+  --cal-key-announced: color-mix(in srgb, var(--amber-ink) 30%, var(--surface));
+  --panel-quiet: color-mix(in srgb, var(--bg) 48%, var(--surface));
+  --rank-1: #b3402a;
+  --rank-2: #a3642f;
+  --rank-3: #96702e;
+  --rank-rest: #6b7684;
+  --shadow-card: 0 1px 2px rgba(32, 42, 48, 0.025);
+  --shadow-card-hover: 0 3px 12px rgba(32, 42, 48, 0.055);
+  --shadow-soft: 0 4px 12px rgba(28, 39, 51, 0.06);
+  --shadow-thumb: 0 1px 2px rgba(28, 39, 51, 0.1), 0 1px 1px rgba(28, 39, 51, 0.04);
+  --shadow-pop: 0 12px 32px rgba(28, 39, 51, 0.12);
+  --prose-ink: #26323a;
+  --code-bg: #f6f7f4;
+  --code-keyword: #006d77;
+  --code-string: #2f6f44;
+  --code-number: #9a6700;
+  --code-title: #6f42c1;
+  --code-variable: #a13d10;
+  --code-meta: #b42348;
+  --selection: rgba(23, 107, 117, 0.16);
+}
+
+@media (min-width: 961px) {
+  :root {
+    --bar-h: 0px;
+  }
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #13191c;
+  --bg-sunk: #182024;
+  --bg-muted: #202a2f;
+  --surface: #1a2226;
+  --surface-2: #1d272b;
+  --raised: #202a2f;
+  --sidebar: #161e21;
+  --daybar: #182024;
+  --field: rgba(255, 255, 255, 0.06);
+  --ink: #e7eceb;
+  --ink-2: #d2dada;
+  --ink-3: #a5b0b3;
+  --ink-4: #89979d;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.06);
+  --accent: #12ccd8;
+  --accent-ink: #2ce2e8;
+  --accent-soft: rgba(18, 204, 216, 0.12);
+  --accent-softer: rgba(18, 204, 216, 0.06);
+  --accent-contrast: #000000;
+  --note: #8fb8a8;
+  --hot: #d86a52;
+  --hot-soft: rgba(216, 106, 82, 0.12);
+  --amber: #d3b26a;
+  --amber-ink: #d3b26a;
+  --amber-soft: rgba(211, 178, 106, 0.12);
+  --ok: #5fc79a;
+  --ok-soft: rgba(95, 199, 154, 0.12);
+  --ok-ink: #7fd1ad;
+  --cal-plain: rgba(255, 255, 255, 0.03);
+  --rank-1: #d86a52;
+  --rank-2: #d18a5e;
+  --rank-3: #d3b26a;
+  --rank-rest: #7b869a;
+  --shadow-card: none;
+  --shadow-card-hover: none;
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-thumb: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --prose-ink: #d7dfdf;
+  --code-bg: #10151c;
+  --code-keyword: #78dce8;
+  --code-string: #a9dc76;
+  --code-number: #ffd866;
+  --code-title: #ab9df2;
+  --code-variable: #fc9867;
+  --code-meta: #ff6188;
+  --selection: rgba(18, 204, 216, 0.22);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  ::selection {
+    background: var(--selection);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+  img {
+    max-width: 100%;
+  }
+}
+
+@layer components {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 1.625rem;
+    padding: 0 0.625rem;
+    border-radius: 9999px;
+    font-size: 12px;
+    color: var(--ink-4);
+    background: var(--bg-sunk);
+    border: 1px solid var(--line-soft);
+    transition: color 120ms, background-color 120ms, border-color 120ms;
+  }
+  a.chip:hover {
+    color: var(--accent);
+    border-color: var(--line-strong);
+  }
+  .skeleton {
+    background: var(--bg-muted);
+    border-radius: var(--radius-control);
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+  /* Hide horizontal scrollbars on chip and tab rows that scroll on small screens. */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  /* Quiet scrollbars for side columns that scroll on their own. */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+  /* <details> without the native marker (source lists, method notes). */
+  .disclosure > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* Where the browser can animate to an auto height, disclosures open and close smoothly. */
+@supports (interpolate-size: allow-keywords) {
+  .disclosure {
+    interpolate-size: allow-keywords;
+  }
+  .disclosure::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size 220ms var(--ease-out-quart), content-visibility 220ms allow-discrete;
+  }
+  .disclosure[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* Phone shell: a band that runs out to the screen's edges through the gutters (bars, day headers). */
+@utility bleed {
+  margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r));
+  padding-inline: var(--gutter-l) var(--gutter-r);
+}
+
+/* Cards are utilities so they take variants (lg:card: a card on desktop, a plain row on phones). */
+@utility card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+/* The well: a quiet sunk panel for what navigates or annotates rather than reads (the report's 报眼,
+   the hot lead's heat panel, notes on about and feedback). Radius is set where it is used. */
+@utility well {
+  background-color: var(--bg-sunk);
+  box-shadow: inset 0 0 0 1px var(--line-soft);
+  [data-theme="dark"] & {
+    background-color: color-mix(in srgb, var(--bg-muted) 60%, transparent);
+  }
+}
+@utility card-hover {
+  transition: box-shadow 200ms var(--ease-out-quart), border-color 200ms, transform 200ms var(--ease-out-quart);
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--line-strong);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-up {
+  animation: fade-up 280ms var(--ease-out-quart) both;
+}
+
+/* Enter/leave keyframes for components/ui/Presence.tsx; --anim-ms overrides a default length. */
+@keyframes aihot-collapse-in { from { grid-template-rows: 0fr; opacity: 0; } to { grid-template-rows: 1fr; opacity: 1; } }
+@keyframes aihot-collapse-out { from { grid-template-rows: 1fr; opacity: 1; } to { grid-template-rows: 0fr; opacity: 0; } }
+@keyframes aihot-fade-in { from { opacity: 0; } }
+@keyframes aihot-fade-out { to { opacity: 0; } }
+@keyframes aihot-drop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@keyframes aihot-drop-out { to { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@keyframes aihot-notice-in { from { opacity: 0; transform: translateY(-6px); } }
+@keyframes aihot-zoom-in { from { transform: scale(0.96); } }
+@keyframes aihot-zoom-out { to { transform: scale(0.98); } }
+@keyframes aihot-sheet-in { from { transform: translateY(100%); } }
+@keyframes aihot-sheet-out { to { transform: translateY(100%); } }
+@keyframes aihot-slide-in-x { from { opacity: 0; transform: translateX(10px); } }
+@keyframes aihot-swap-in { from { opacity: 0; transform: scale(0.7); } }
+@keyframes aihot-bump { from { transform: scale(0.7); } 55% { transform: scale(1.08); } to { transform: scale(1); } }
+@keyframes aihot-pop-in { from { opacity: 0; transform: scale(0.6); } 60% { opacity: 1; transform: scale(1.05); } to { transform: scale(1); } }
+@keyframes aihot-reveal { from { clip-path: inset(-12px 100% -12px -12px); } to { clip-path: inset(-12px -12px -12px -12px); } }
+.anim-collapse-in { animation: aihot-collapse-in var(--anim-ms, 240ms) var(--ease-out-quart) both; }
+.anim-collapse-out { animation: aihot-collapse-out var(--anim-ms, 240ms) var(--ease-out-quart) both; }
+.anim-fade-in { animation: aihot-fade-in var(--anim-ms, 160ms) ease-out both; }
+.anim-fade-out { animation: aihot-fade-out var(--anim-ms, 160ms) ease-in both; }
+.anim-drop-in { animation: aihot-drop-in 140ms var(--ease-out-quart) both; }
+.anim-drop-out { animation: aihot-drop-out 140ms ease-in both; }
+.anim-notice-in { animation: aihot-notice-in 200ms var(--ease-out-quart) both; }
+.anim-zoom-in { animation: aihot-zoom-in 180ms var(--ease-out-quart) both; }
+.anim-zoom-out, .anim-fade-out > .lightbox-img { animation: aihot-zoom-out 160ms ease-in both; }
+.anim-sheet-in { animation: aihot-sheet-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-sheet-out, .anim-fade-out > .sheet-panel { animation: aihot-sheet-out 220ms cubic-bezier(0.4, 0, 1, 1) both; }
+.anim-slide-in-x { animation: aihot-slide-in-x 160ms var(--ease-out-quart) both; }
+.anim-swap-in { animation: aihot-swap-in 120ms var(--ease-out-quart) both; }
+.anim-bump { animation: aihot-bump 320ms var(--ease-out-quart) both; }
+.anim-pop-in { animation: aihot-pop-in 460ms var(--ease-out-quart) both; }
+.anim-reveal { animation: aihot-reveal 900ms var(--ease-out-quart) both; }
+
+/* The theme switch cross-fades the whole document. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Page changes (components/shell/transitions.ts sets data-vt): on phones a page opened from a link slides
+   in from the right over the one it came from, which drifts left; back reverses it. Otherwise instant. */
+:root[data-vt]::view-transition-old(root),
+:root[data-vt]::view-transition-new(root) {
+  animation: none;
+}
+@media (max-width: 960px) {
+  :root[data-vt="push"]::view-transition-old(root) {
+    animation: aihot-page-out-left 400ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  :root[data-vt="push"]::view-transition-new(root) {
+    animation: aihot-page-in-right 400ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    box-shadow: -10px 0 28px rgba(0, 0, 0, 0.12);
+  }
+  :root[data-vt="back"]::view-transition-old(root) {
+    z-index: 1;
+    animation: aihot-page-out-right 360ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    box-shadow: -10px 0 28px rgba(0, 0, 0, 0.12);
+  }
+  :root[data-vt="back"]::view-transition-new(root) {
+    animation: aihot-page-in-left 360ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+@keyframes aihot-page-in-right { from { transform: translateX(100%); } }
+@keyframes aihot-page-out-left { to { transform: translateX(-28%); } }
+@keyframes aihot-page-out-right { to { transform: translateX(100%); } }
+@keyframes aihot-page-in-left { from { transform: translateX(-28%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Long-form reading (article bodies, reports, legal pages)
+   --------------------------------------------------------------------------- */
+/*
+ * Article text as Chinese magazines and news sites set it (16–17px
+ * at 1.63–1.88 in 680–730px): 17px on phones, 18px from xl in the 760px column, about 42 characters a
+ * line, at 1.8 with a little tracking; paragraphs a good breath apart.
+ */
+.prose {
+  color: var(--prose-ink);
+  font-size: 17px;
+  line-height: 1.8;
+  letter-spacing: 0.012em;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 80rem) {
+  .prose { font-size: 18px; }
+}
+.prose > * + * { margin-top: 1.2em; }
+.prose p { margin: 0; }
+.prose p + p { margin-top: 1.2em; }
+.prose h2, .prose h3, .prose h4, .prose h5 {
+  color: var(--ink);
+  font-weight: 650;
+  line-height: 1.4;
+  letter-spacing: 0;
+  scroll-margin-top: 88px;
+}
+.prose h2 { font-size: 1.26em; margin-top: 2.2em; }
+.prose h3 { font-size: 1.1em; margin-top: 1.8em; }
+.prose h4, .prose h5 { font-size: 1em; margin-top: 1.5em; }
+.prose :is(h2, h3, h4, h5) + * { margin-top: 0.7em; }
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 120ms;
+}
+.prose a:hover { text-decoration-color: var(--accent); }
+.prose strong, .prose b { color: var(--ink); font-weight: 650; }
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li + li { margin-top: 0.35em; }
+.prose li::marker { color: var(--ink-4); }
+.prose blockquote {
+  border-left: 3px solid var(--line-strong);
+  padding: 0.1em 0 0.1em 1em;
+  color: var(--ink-3);
+}
+.prose img, .prose video {
+  border-radius: var(--radius-tile);
+  margin-inline: auto;
+  height: auto;
+  background: var(--bg-sunk);
+}
+.prose figure { margin: 1.5em 0; }
+.prose figcaption { font-size: 13px; color: var(--ink-4); text-align: center; margin-top: 0.6em; }
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--code-bg);
+  border: 1px solid var(--line-soft);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-mark);
+}
+.prose pre {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  padding: 0.9em 1em;
+  overflow-x: auto;
+}
+.prose pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+/* Code blocks in article bodies get a head with the language and a copy button (features/item/ArticleBody). */
+.prose .code-block { margin-top: 1.2em; border: 1px solid var(--line); border-radius: var(--radius-tile); overflow: hidden; background: var(--code-bg); }
+.prose .code-block pre { margin: 0; border: 0; border-radius: 0; }
+.prose .code-block-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 8px 6px 14px; border-bottom: 1px solid var(--line-soft); font-size: 12px; line-height: 1.4; color: var(--ink-4); letter-spacing: 0; }
+.prose .code-block-copy { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius-mark); background: var(--surface); color: var(--ink-3); font-size: 12px; transition: color 120ms, border-color 120ms; }
+.prose .code-block-copy:hover { color: var(--ink); border-color: var(--line-strong); }
+.prose .code-block-copy[data-status="copied"] { color: var(--ok-ink); }
+.prose .hljs-comment, .prose .hljs-quote { color: var(--ink-4); font-style: italic; }
+.prose .hljs-keyword, .prose .hljs-selector-tag, .prose .hljs-doctag, .prose .hljs-name { color: var(--code-keyword); }
+.prose .hljs-string, .prose .hljs-regexp, .prose .hljs-link, .prose .hljs-attribute, .prose .hljs-addition { color: var(--code-string); }
+.prose .hljs-number, .prose .hljs-literal, .prose .hljs-symbol, .prose .hljs-bullet { color: var(--code-number); }
+.prose .hljs-title, .prose .hljs-section, .prose .hljs-type, .prose .hljs-built_in { color: var(--code-title); }
+.prose .hljs-variable, .prose .hljs-template-variable, .prose .hljs-params, .prose .hljs-attr { color: var(--code-variable); }
+.prose .hljs-meta, .prose .hljs-deletion { color: var(--code-meta); }
+.prose img.zoomable { cursor: zoom-in; }
+/* Wide tables scroll sideways instead of squeezing their cells to a character a line (body text may
+   break anywhere; cells break between words, and keep room for a short word or number). */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  overflow-wrap: normal;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.prose th, .prose td { border: 1px solid var(--line); padding: 0.5em 0.75em; text-align: left; min-width: 4.5em; overflow-wrap: break-word; }
+.prose th { background: var(--bg-sunk); font-weight: 600; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+
+/* Policy pages read smaller and quieter than article bodies, with numbered sections set apart. */
+.prose-compact {
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+@media (min-width: 80rem) {
+  .prose-compact { font-size: 16px; line-height: 1.85; }
+}
+.prose-compact h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 2.2em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--line);
+}
+.prose-compact h3 {
+  font-size: 16px;
+  margin-top: 1.6em;
+}
+.prose-compact table {
+  font-size: 13px;
+}
+.prose-compact td:first-child {
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Report pages read on a faintly toned paper in the light theme, lighter than the site's page ground;
+   the archive column is halfway between the site sidebar and white. */
+:root:not([data-theme="dark"]) body:has(.report-shell) {
+  background: color-mix(in srgb, var(--bg) 60%, var(--surface));
+}
+/* Reset monitor status card: a 135° wash of the state's tone (amber pending, green landed, rose alert). */
+.cr-wash {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tone, var(--ink-4)) 7%, var(--surface)), var(--surface) 60%);
+}
+/* The state dot carries a soft halo that breathes while something is pending. */
+.cr-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);
+}
+.cr-dot-live {
+  animation: cr-pulse 2s ease-in-out infinite;
+}
+@keyframes cr-pulse {
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 6%, transparent); }
+}
