@@ -14,8 +14,8 @@
 </p>
 
 <p align="center">
-  <b>一个自己找热点、自己写日报的网站框架。</b><br>
-  把信源换成你的，把精选标准换成你的 KnowHow，它就是你的行业热点站。
+  <b>把开源项目的真实变化，变成可理解、可练习、可复习的学习路径。</b><br>
+  从项目雷达开始，到 Change Brief、Learning Task 和 Review Card，形成一条可追溯的学习闭环。
 </p>
 
 <p align="center">
@@ -30,26 +30,41 @@
 
 ## 这是什么
 
-[RaderLearning](https://github.com/ceyyy427/raderlearning) 是我做的一个 AI 热点网站。它每天从一批信源里收资料，用大模型先筛一遍、再独立打两次分，挑出真正值得看的，写成中文标题和摘要；把不同来源说的同一件事聚成一个事件，按有多少人在说排出热点；每天早上出一份日报。
+[RaderLearning](https://github.com/ceyyy427/raderlearning) 是一个面向个人开发者的开源学习工作区。它跟踪 GitHub Release、Issue、Pull Request、官方文档和 Changelog，把项目变化整理成有证据的学习内容：
 
-这个仓库是它的完整框架：网站、后台、精选流程、聚簇和热度算法，**所有提示词的原文和入选门槛**，都在这里。
+```text
+Project → Change Event → Change Brief → Learning Task → Review Card
+```
+
+它关注的不是“再生成一篇摘要”，而是让每条重要变化回答三个问题：发生了什么、为什么需要关心、怎样证明自己理解了。Radar 负责发现变化，Change Brief 解释影响，Learning Task 让读者完成一次安全练习，Review Card 把错误和复习时间留在自己的 Workspace 里。
+
+这个仓库保留了完整的采集、判重、归组、来源快照、公开 API 和 Web 界面。内容必须能回到原始来源，来源冲突会显示为 `disputed`，证据不足时不会生成看似确定的结论。
+
+### 我们坚持的设计
+
+- **来源先于模型。** 模型可以帮助分类和解释，但不能补写来源没有说过的事实；每个 Change Brief 都保留来源链接和证据片段。
+- **学习先于消费。** 页面按“变化 → 影响 → 练习 → 复习”组织，而不是让读者停在一段摘要上。
+- **本地优先。** 项目和公开变化存放在服务端，个人保存项、任务结果、复习卡和笔记存放在当前浏览器；V0 不需要账号，也不做云端同步。
+- **安全边界清晰。** V0 不执行用户代码；读者打开页面不会触发模型调用，模型只在后端任务中运行。
+
+```mermaid
+flowchart LR
+  P[Project] --> E[Change Event]
+  E --> B[Change Brief]
+  B --> T[Learning Task]
+  T --> R[Review Card]
+  R --> W[(Browser Workspace)]
+```
 
 ## 为什么开源
 
-这半年，很多做法律、做 HR、做金融、做贵金属的朋友问我，能不能也给他们的行业做一个。
-
-我做不了。我不懂你们的行业，不知道哪些信源有用，也不知道什么样的消息，对你们来说才叫热点。
-
-但你们懂。
-
-既然我没办法满足所有人，那就把火种交到大家自己手上。
+开源是因为每个人关注的项目和学习目标都不一样。你知道哪些信源值得盯、哪些变化会影响自己的系统，也知道哪些概念需要反复练习；RaderLearning 把采集、证据和学习循环交给你配置。
 
 ## 说在前面
 
 - **我不是专业的开发者。** 我是设计师出身，半年前还看不太懂代码。这套代码是我和 AI 一起重写的，比以前干净了很多，但一定还有写得不好的地方。发现问题欢迎提 Issue，我不一定能很快回复，先说声抱歉。
 - **这是一份快照。** 它来自 RaderLearning 正在线上跑的代码，不是精心打磨的通用框架。以后 RaderLearning 的更新，我会尽量同步过来，但没法保证每一次都同步。
-- **里面没有 RaderLearning 的信源名单和运营数据。** 仓库带了 18 个公开的海外 AI 资讯源做示范，够你跑起来看效果；真正的信源，要换成你自己行业的。
-- **请不要用 RaderLearning 的名字和 Logo。** 换上你自己的名字，它就是你的站。
+- **里面没有 RaderLearning 的运营数据。** 仓库带了公开信源和示范配置，够你跑起来看效果；发布自己的站点前，请在 `industry/` 中确认站名、条款和品牌资源。
 
 ## 它是怎么工作的
 
@@ -58,7 +73,7 @@
   <img src="docs/assets/how-light.png" alt="六步：采集、预筛、两次评分、写作、聚簇、热点与成刊" width="100%">
 </picture>
 
-一条资料从信源进来，先判重，再预筛；可能重要的独立打两次分，写好中文标题和摘要，和别的报道聚成事件，算进热度。分数过了门槛、又不是精选里已有新闻的重复，才进精选；日报按规则编出当天要闻，周报、月报再从日报里汇编。每一步的提示词都在 [`industry/prompts/`](industry/prompts/)，改标准不用改代码。详见 [精选与校准](docs/selection.md)。
+一条资料从信源进来，先判重，再保留原始快照；可能重要的变化会被归组为 Change Event，经过证据检查后进入 Radar。读者从 Radar 打开 Change Brief，先看发生了什么和为什么重要，再完成一项不执行代码的 Learning Task，最后由本地 Review Card 安排复习。每一步的提示词都在 [`industry/prompts/`](industry/prompts/)，改标准不用改代码；完整运行方式见 [V0 runbook](docs/open-source-radar-v0-runbook.md)。
 
 ### 聚簇与热点
 
@@ -82,6 +97,11 @@
 
 | | |
 |---|---|
+| **项目雷达** | 关注 GitHub Release、Issue、Pull Request、官方文档和 Changelog；同一个项目变化只保留一个可追踪的 Change Event |
+| **Change Brief** | 用原始来源回答“发生了什么、为什么重要、谁会受影响”；证据不足或来源冲突时明确显示不确定性 |
+| **Learning Task** | 从变化中生成代码阅读、Diff 判断或迁移选择练习；只展示安全材料，不执行任意用户代码 |
+| **Workspace / Review** | 在当前浏览器保存变化、任务结果、复习卡和纯文本笔记；错误回答会更快进入复习，掌握后延后复习 |
+| **来源快照** | 保存来源 URL、内容哈希、抓取时间和状态；失败来源不会被伪装成成功内容 |
 | **六种信源** | RSS、网页列表、JSON 接口、X 账号、微信公众号，以及你自己脚本推送进来的内容。信源分级（官方一手 / 媒体个人），抓取频率按产出自动调整 |
 | **精选** | 预筛，同一份评分标准独立打两次分，再按信源分级的门槛决定入选；同一条新闻只占一条，换个说法的重复不进。提示词和门槛全部公开，全部可以改；用你自己标注的样本在 SelectBench 里校准 |
 | **写作** | 中文标题、答案先行的摘要、推荐理由，外文全文翻译；分类、标签和新闻事实单独抽取；防止模型把原文没提到的公司写进标题 |
@@ -186,4 +206,4 @@ RaderLearning 曾经只是我无数个深夜里，一个很小、很小的念头
 
 ---
 
-<sub>**In English:** RaderLearning ([github.com/ceyyy427/raderlearning](https://github.com/ceyyy427/raderlearning)) is an AI news site that collects from many sources, lets a language model filter and score every item twice, writes Chinese headlines and summaries, clusters reports of the same story into one event, ranks events by how many independent sources discuss them, and publishes a daily briefing. This repository is its complete framework, including every prompt and threshold. Hand it to your coding agent with `AGENTS.md` and `docs/customize.md` to turn it into a news site for your own field. The documentation is in Chinese.</sub>
+<sub>**In English:** RaderLearning ([github.com/ceyyy427/raderlearning](https://github.com/ceyyy427/raderlearning)) is a local-first learning workspace for individual developers. It tracks open-source project changes, keeps source-backed snapshots, groups them into Change Events, and turns important changes into Change Briefs, safe Learning Tasks, and browser-local Review Cards. Evidence stays linked to the original source, disputed or failed evidence remains visibly uncertain, and V0 executes no arbitrary user code or cloud sync. Use `AGENTS.md`, `docs/customize.md`, and the V0 runbook to adapt the workspace to your own projects and learning goals.</sub>
