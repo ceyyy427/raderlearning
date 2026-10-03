@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="116" fill="#13191c"/><path d="M256 92C271 199 313 241 420 256C313 271 271 313 256 420C241 313 199 271 92 256C199 241 241 199 256 92Z" fill="#2ce2e8"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RaderLearning radar">
+  <rect width="512" height="512" rx="112" fill="#fff7ed"/>
+  <g fill="none" stroke="#c55a20" stroke-width="16">
+    <circle cx="256" cy="256" r="156"/>
+    <circle cx="256" cy="256" r="94" opacity=".45"/>
+    <path d="M256 256 356 156" stroke-linecap="round"/>
+  </g>
+  <path d="M256 256V100a156 156 0 0 1 110 46Z" fill="#f4a261" opacity=".45"/>
+  <circle cx="256" cy="256" r="18" fill="#c55a20"/>
+  <circle cx="348" cy="172" r="23" fill="#c55a20"/>
+</svg>

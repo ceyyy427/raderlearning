@@ -1,15 +1,15 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
-    <img src="docs/assets/banner-light.png" alt="RaderLearning：每个行业，都可以有自己的 RaderLearning。很多条信源流进中间的精选，再分给法律、人力资源、金融等各个行业" width="100%">
+    <img src="docs/assets/banner-light.png" alt="RaderLearning：把开源项目的变化变成自己的学习路径，从 Release、PR 和 Docs 走向 Change Brief、Learning Task 和 Review Card" width="100%">
   </picture>
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-176b75?style=flat-square" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/Node.js-24-176b75?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 24">
-  <img src="https://img.shields.io/badge/PostgreSQL-17-176b75?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 17">
-  <img src="https://img.shields.io/badge/Docker-Compose-176b75?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-c55a20?style=flat-square" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/Node.js-24-c55a20?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 24">
+  <img src="https://img.shields.io/badge/PostgreSQL-17-c55a20?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 17">
+  <img src="https://img.shields.io/badge/Docker-Compose-c55a20?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
   <a href="https://github.com/ceyyy427/raderlearning"><img src="https://img.shields.io/badge/demo-github.com/ceyyy427/raderlearning-202a30?style=flat-square" alt="github.com/ceyyy427/raderlearning"></a>
 </p>
 
@@ -56,6 +56,12 @@ flowchart LR
   R --> W[(Browser Workspace)]
 ```
 
+<p align="center">
+  <img src="docs/assets/design-network.png" alt="RaderLearning 设计网络图：项目变化经过证据、Change Brief、安全练习和本地复习，学习方向与深度由自己决定" width="100%">
+</p>
+
+这张图把设计原则放回一条真实的学习路径：你选择项目和目标，RaderLearning 保存可追溯证据，把相关变化归成事件，解释影响，提供不执行代码的练习，再把你的理解留在本地复习里。你用什么、怎么用、愿意回看多深，决定了最后能学到什么。
+
 ## 为什么开源
 
 开源是因为每个人关注的项目和学习目标都不一样。你知道哪些信源值得盯、哪些变化会影响自己的系统，也知道哪些概念需要反复练习；RaderLearning 把采集、证据和学习循环交给你配置。
@@ -69,7 +75,7 @@ flowchart LR
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-dark.png">
-  <img src="docs/assets/how-light.png" alt="六步：采集、预筛、两次评分、写作、聚簇、热点与成刊" width="100%">
+  <img src="docs/assets/how-light.png" alt="六步：选择项目、保存来源快照、归组变化、理解 Change Brief、完成安全练习、回到 Review Card" width="100%">
 </picture>
 
 一条资料从信源进来，先判重，再保留原始快照；可能重要的变化会被归组为 Change Event，经过证据检查后进入 Radar。读者从 Radar 打开 Change Brief，先看发生了什么和为什么重要，再完成一项不执行代码的 Learning Task，最后由本地 Review Card 安排复习。每一步的提示词都在 [`industry/prompts/`](industry/prompts/)，改标准不用改代码；完整运行方式见 [V0 runbook](docs/open-source-radar-v0-runbook.md)。
@@ -78,19 +84,21 @@ flowchart LR
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/cluster-dark.png">
-  <img src="docs/assets/cluster-light.png" alt="五个来源的报道聚成一个事件，事件进入当前热点榜" width="100%">
+  <img src="docs/assets/cluster-light.png" alt="Release、Pull Request、Changelog 和官方文档归成一个有证据的 Change Event，再进入 Change Brief" width="100%">
 </picture>
 
-同一件事，官网发一篇、媒体转十篇、X 上吵一天，读者只需要看到一次。RaderLearning 把它们聚成一个**事件**：先用标题摘要的向量（没配向量服务时比文字重合度）在最近两周里找候选，再让模型判断是同一件事、后续进展，还是两件事；拿不准的合并，换一家模型再确认一遍。
+同一个项目变化可能同时出现在 Release、Pull Request、Changelog 和官方文档里，读者只需要看到一次。RaderLearning 把它们聚成一个**Change Event**：先用标题摘要的向量（没配向量服务时比文字重合度）找候选，再判断是同一变化、后续进展，还是两件事；拿不准的合并会保留不确定性，不会把猜测写成事实。
 
-**热度**按事件算，不按文章算：48 小时内，每个独立来源只算一次，24 小时减半。重复抓取不会多算，一家媒体发十篇也只算一次，所以排在前面的，是真正有很多人在说的事。
+**重要性**按事件算，不按重复快照算：同一来源的重复抓取不会重复计入，独立来源和变化类型会影响排序。每个事件都保留主来源和支持来源，读者可以从 Change Brief 回到原始证据。
 
-### 速度
+### 本地优先与安全边界
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/perf-dark.png">
-  <img src="docs/assets/perf-light.png" alt="RaderLearning 线上实测：页面中位数 10 毫秒，95% 在 50 毫秒内；接口中位数 6 毫秒，95% 在 12 毫秒内；文章页 95% 在 14 毫秒内" width="100%">
+  <img src="docs/assets/perf-light.png" alt="RaderLearning 的本地优先设计：来源可追溯、学习记录保存在浏览器、安全练习不执行用户代码" width="100%">
 </picture>
+
+项目变化与来源快照由服务端保存，个人保存项、任务结果、复习卡和笔记留在当前浏览器。学习任务只做代码阅读、Diff 判断和迁移选择，不执行任意用户代码；页面阅读也不会触发模型调用。
 
 ## 你会得到什么
 
@@ -101,16 +109,12 @@ flowchart LR
 | **Learning Task** | 从变化中生成代码阅读、Diff 判断或迁移选择练习；只展示安全材料，不执行任意用户代码 |
 | **Workspace / Review** | 在当前浏览器保存变化、任务结果、复习卡和纯文本笔记；错误回答会更快进入复习，掌握后延后复习 |
 | **来源快照** | 保存来源 URL、内容哈希、抓取时间和状态；失败来源不会被伪装成成功内容 |
-| **六种信源** | RSS、网页列表、JSON 接口、X 账号、微信公众号，以及你自己脚本推送进来的内容。信源分级（官方一手 / 媒体个人），抓取频率按产出自动调整 |
-| **精选** | 预筛，同一份评分标准独立打两次分，再按信源分级的门槛决定入选；同一条新闻只占一条，换个说法的重复不进。提示词和门槛全部公开，全部可以改；用你自己标注的样本在 SelectBench 里校准 |
-| **写作** | 中文标题、答案先行的摘要、推荐理由，外文全文翻译；分类、标签和新闻事实单独抽取；防止模型把原文没提到的公司写进标题 |
-| **聚簇** | 不同来源报道的同一件事聚成一个事件，后续进展挂在同一个事件下，事件页有综述；进展和报道时间线可一起切换“最新在前”或“最早在前”；人工改过的归属不会被覆盖 |
-| **热点** | 按事件算热度：独立来源越多越靠前，X 上的讨论也算进来；和 6 小时前比，涨得快的标上升，新出现的标“新” |
-| **日报、周报、月报** | 每天 08:00 出日报，按规则编出当天要闻：一件事一条，报过的事只在有新进展时跟进，不调模型。每周一出周报、每月 1 日出月报，从日报里汇编，模型只写总述和栏目导读 |
-| **主题与搜索** | 公司、方向、内容形态三类主题页，带近 12 个月的大事记（公司是横向编年史）；标题摘要搜索和全文相关搜索 |
-| **给 Agent 用** | RSS（精选、全部、全文、日报、周报、月报）、公开 API、MCP、Agent Markdown、`llms.txt`，同一份内容给人看也给 Agent 用 |
-| **后台** | 信源管理与试抓、内容诊断、精选评测、每一步单独换模型、付费服务的预算熔断、运行记录与告警 |
-| **AI 专属模块** | 模型榜（汇总多家公开评测，方法公开）和 Codex 重置监控。别的行业一个开关关掉 |
+| **项目来源** | GitHub Release、Issue、Pull Request、官方文档和 Changelog；适配器保留 URL、发布时间、抓取时间、版本和失败状态 |
+| **去重与归组** | 同一个项目变化只保留一个可追踪的 Change Event，支持后续进展、来源冲突和不确定性标记 |
+| **重要性排序** | 规则先识别 breaking change、deprecation、security、API change、documentation 和 performance，再结合项目关注关系排序 |
+| **公开出口** | Radar、Project 页面、公开 API、RSS、Agent Markdown 和 MCP 共用同一份来源发布读取层 |
+| **管理员工作台** | 管理项目与来源、运行同步、查看失败快照和任务日志；页面阅读不会触发模型调用 |
+| **运行产物** | 继承的日报、周报、月报出口仍可按配置使用，但核心阅读路径是 Radar → Change Brief → Learning Task → Review Card |
 
 ## 你能从中学到什么
 
@@ -124,12 +128,12 @@ RaderLearning 不预设一套所有人都一样的课程。你选择关注什么
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/shots-dark.png">
-  <img src="docs/assets/shots-light.png" alt="首页的当前热点与精选，关于页的信源河" width="100%">
+  <img src="docs/assets/shots-light.png" alt="RaderLearning 的 Radar Inbox 与 Learning Workspace 学习闭环" width="100%">
 </picture>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/board-dark.png">
-  <img src="docs/assets/board-light.png" alt="模型榜" width="100%">
+  <img src="docs/assets/board-light.png" alt="RaderLearning 的个人复习卡与本地笔记" width="100%">
 </picture>
 
 <p align="center"><sub>截图来自用示范信源跑起来的本地站，站名是默认的 RaderLearning。</sub></p>
